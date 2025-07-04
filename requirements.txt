@@ -1,0 +1,8 @@
+openai
+faster-whisper
+pydantic
+streamlit
+torch
+tqdm
+python-dotenv
+streamlit
