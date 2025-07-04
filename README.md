@@ -1,4 +1,3 @@
-
 # 🎧 Podcast Summarizer with Chatbot
 
 This project is a podcast analysis tool built using the **Model Context Protocol (MCP)**. It transcribes audio, segments it, summarizes each part, extracts insights, and allows you to ask questions via an interactive chatbot.
@@ -104,3 +103,4 @@ The Model Context Protocol tracks all interactions:
 ## 📄 License
 
 MIT License
+
