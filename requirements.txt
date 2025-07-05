@@ -6,3 +6,4 @@ torch
 tqdm
 python-dotenv
 streamlit
+huggingface_hub
