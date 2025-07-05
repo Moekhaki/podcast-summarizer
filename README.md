@@ -1,21 +1,21 @@
 # 🎧 Podcast Summarizer with Chatbot
 
-This project is a podcast analysis tool built using the **Model Context Protocol (MCP)**. It transcribes audio, segments it, summarizes each part, extracts insights, and allows you to ask questions via an interactive chatbot.
+This project is a podcast analysis tool built using the Model Context Protocol (MCP). It transcribes audio, segments it, summarizes each part, extracts insights, and allows you to ask questions via an interactive chatbot.
 
 ---
 
-## 🚀 Features
+## Features
 
-- 🎙️ Transcribe MP3/WAV podcast episodes using Whisper
-- ✂️ Segment the transcript into manageable chunks
-- 📝 Summarize each segment using a Hugging Face summarization model
-- 💡 Extract key insights
-- 💬 Ask questions via a chatbot (powered by Mistral 7B Instruct)
-- 📜 All interactions tracked using MCP
+-  Transcribe MP3/WAV podcast episodes using Whisper
+-  Segment the transcript into manageable chunks
+-  Summarize each segment using a Hugging Face summarization model
+-  Extract key insights
+-  Ask questions via a chatbot (powered by Mistral 7B Instruct)
+-  All interactions tracked using MCP
 
 ---
 
-## 🐳 Run with Docker
+## Run with Docker
 
 ### 1. Clone the repo
 
@@ -51,7 +51,7 @@ docker run -it --rm -p 8501:8501 \
 
 ---
 
-## 🎧 Usage Instructions
+## Usage Instructions
 
 1. Start the Docker container (as above)
 2. Open your browser and go to: `http://localhost:8501`
@@ -83,7 +83,7 @@ docker run -it --rm -p 8501:8501 \
 
 ---
 
-## 📜 MCP
+## MCP
 
 The Model Context Protocol tracks all interactions:
 - Who did what (`transcriber`, `summarizer`, `chatbot`, etc.)
@@ -92,7 +92,7 @@ The Model Context Protocol tracks all interactions:
 
 ---
 
-## 🛠 TODO
+## TODO
 
 - Add downloadable report
 - Support multi-turn chatbot sessions
@@ -100,7 +100,7 @@ The Model Context Protocol tracks all interactions:
 
 ---
 
-## 📄 License
+## License
 
 MIT License
 
