@@ -8,8 +8,7 @@ Role = Literal[
     "user",
     "transcriber",
     "segmenter",
-    "summarizer",
-    "explainer",
+    "analyzer",
     "chatbot"
 ]
 
