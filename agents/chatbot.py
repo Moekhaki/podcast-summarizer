@@ -1,7 +1,10 @@
 import os
+from typing import List, Dict
+
 from dotenv import load_dotenv
 import google.generativeai as genai
-from typing import List, Dict
+
+
 
 class ChatBot:
     def __init__(self):

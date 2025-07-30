@@ -1,7 +1,9 @@
 import os
-from dotenv import load_dotenv
+from typing import List
+
 import google.generativeai as genai
-from typing import List, Dict
+from dotenv import load_dotenv
+
 from utils.caching import with_cache
 
 class ContentAnalyzer:
@@ -33,10 +35,10 @@ Please provide:
    - Explain why it matters
 
 Format your response as:
-Summary:
+**Summary**:
 [your summary here]
 
-Key Insights:
+**Key Insights**:
 • [insight 1]
 • [insight 2]
 • [insight 3]"""

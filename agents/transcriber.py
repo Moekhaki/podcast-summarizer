@@ -1,59 +1,76 @@
-from faster_whisper import WhisperModel
-from utils.caching import with_cache
-import numpy as np
-from pydub import AudioSegment
-import os
-from typing import List
-from concurrent.futures import ThreadPoolExecutor
 import gc
+import tempfile
+from concurrent.futures import ThreadPoolExecutor
+from typing import List, Tuple
+from pathlib import Path
+
+from faster_whisper import WhisperModel
+from pydub import AudioSegment
+
+from utils.caching import with_cache
 
 class Transcriber:
     def __init__(self, model_size="base", chunk_size=300):  # chunk_size in seconds
         self.model = WhisperModel(model_size, compute_type="int8")
         self.chunk_size = chunk_size
+        self.temp_dir = Path(tempfile.mkdtemp(prefix="podcast_chunks_"))
         
-    def _split_audio(self, audio_path: str) -> List[AudioSegment]:
-        """Split audio file into chunks"""
+    def _split_audio(self, audio_path: str) -> List[Tuple[int, AudioSegment]]:
+        """Split audio file into chunks and return with indices"""
         audio = AudioSegment.from_file(audio_path)
         chunk_length = self.chunk_size * 1000  # convert to milliseconds
         
         chunks = []
         for i in range(0, len(audio), chunk_length):
             chunk = audio[i:i + chunk_length]
-            chunks.append(chunk)
+            chunks.append((i, chunk))
         return chunks
 
-    def _transcribe_chunk(self, chunk: AudioSegment) -> str:
-        """Transcribe a single audio chunk"""
-        # Save chunk temporarily
-        temp_path = "temp_chunk.wav"
-        chunk.export(temp_path, format="wav")
+    def _transcribe_chunk(self, chunk_data: Tuple[int, AudioSegment]) -> Tuple[int, str]:
+        """Transcribe a single chunk and return index with text"""
+        chunk_idx, chunk = chunk_data
+        
+        # Create unique temp file for this chunk
+        temp_path = self.temp_dir / f"chunk_{chunk_idx}.wav"
+        chunk.export(str(temp_path), format="wav")
         
         try:
             segments, _ = self.model.transcribe(
-                temp_path,
+                str(temp_path),
                 beam_size=5,
-                vad_filter=True,  # Voice Activity Detection
+                vad_filter=True,
                 vad_parameters=dict(min_silence_duration_ms=500)
             )
-            return " ".join([segment.text for segment in segments])
+            return chunk_idx, " ".join([segment.text for segment in segments])
         finally:
-            if os.path.exists(temp_path):
-                os.remove(temp_path)
-            gc.collect()  # Suggestion code change: garbage collection after processing each chunk
+            if temp_path.exists():
+                temp_path.unlink()
+            gc.collect()
+
+    def _cleanup(self):
+        """Clean up temporary directory"""
+        if self.temp_dir.exists():
+            for file in self.temp_dir.glob("*.wav"):
+                file.unlink(missing_ok=True)
+            self.temp_dir.rmdir()
 
     @with_cache("transcription_cache")
     def transcribe(self, audio_path: str) -> str:
         """Transcribe audio file to text with chunking and caching"""
         print(f"[Transcriber] Transcribing {audio_path} ...")
         
-        # Split audio into manageable chunks
-        chunks = self._split_audio(audio_path)
-        print(f"[Transcriber] Split into {len(chunks)} chunks")
-        
-        # Transcribe each chunk
-        with ThreadPoolExecutor(max_workers=3) as executor:
-            transcriptions = list(executor.map(self._transcribe_chunk, chunks))
-        
-        # Combine all transcriptions
-        return " ".join(transcriptions)
+        try:
+            # Split audio into manageable chunks
+            chunks = self._split_audio(audio_path)
+            print(f"[Transcriber] Split into {len(chunks)} chunks")
+            
+            # Transcribe each chunk
+            with ThreadPoolExecutor(max_workers=3) as executor:
+                results = list(executor.map(self._transcribe_chunk, chunks))
+            
+            # Sort by chunk index and combine
+            results.sort(key=lambda x: x[0])
+            return " ".join(text for _, text in results)
+            
+        finally:
+            self._cleanup()
