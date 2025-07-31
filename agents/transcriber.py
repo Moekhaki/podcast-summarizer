@@ -1,19 +1,22 @@
 import gc
 import tempfile
+import hashlib
 from concurrent.futures import ThreadPoolExecutor
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 from pathlib import Path
 
 from faster_whisper import WhisperModel
 from pydub import AudioSegment
 
 from utils.caching import with_cache
+from utils.embedding import EmbeddingStore
 
 class Transcriber:
     def __init__(self, model_size="base", chunk_size=300):  # chunk_size in seconds
         self.model = WhisperModel(model_size, compute_type="int8")
         self.chunk_size = chunk_size
         self.temp_dir = Path(tempfile.mkdtemp(prefix="podcast_chunks_"))
+        self.embedding_store = EmbeddingStore()
         
     def _split_audio(self, audio_path: str) -> List[Tuple[int, AudioSegment]]:
         """Split audio file into chunks and return with indices"""
@@ -74,3 +77,37 @@ class Transcriber:
             
         finally:
             self._cleanup()
+
+    def _get_file_id(self, audio_path: str) -> str:
+        """Generate unique ID for the audio file"""
+        with open(audio_path, 'rb') as f:
+            return hashlib.md5(f.read()).hexdigest()
+            
+    def transcribe_and_embed(self, audio_path: str) -> Dict:
+        """Transcribe audio and generate embeddings with caching"""
+        file_id = self._get_file_id(audio_path)
+        
+        # Try to load existing embeddings
+        existing_embeddings = self.embedding_store.load_embeddings(file_id)
+        if existing_embeddings:
+            print("[Transcriber] Loading cached embeddings")
+            full_text = " ".join(chunk for chunk, _ in existing_embeddings)
+            return {
+                "transcript": full_text,
+                "chunks_and_embeddings": existing_embeddings
+            }
+            
+        # Transcribe if no cache exists
+        transcript = self.transcribe(audio_path)
+        
+        # Generate embeddings with overlap
+        print("[Transcriber] Generating embeddings...")
+        chunks_and_embeddings = self.embedding_store.create_embeddings(transcript)
+        
+        # Cache the results
+        self.embedding_store.save_embeddings(file_id, chunks_and_embeddings)
+        
+        return {
+            "transcript": transcript,
+            "chunks_and_embeddings": chunks_and_embeddings
+        }
