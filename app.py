@@ -26,10 +26,12 @@ def save_uploaded_file(uploaded_file) -> Path:
 
 def process_audio(audio_path: Path, skip_analysis: bool) -> Tuple[str, List[str], List[str]]:
     """Process audio file and return transcript, segments, and analyses"""
-    # Transcribe
-    with st.spinner("Transcribing..."):
+    # Transcribe and generate embeddings
+    with st.spinner("Transcribing and generating embeddings..."):
         transcriber = Transcriber()
-        transcript = transcriber.transcribe(str(audio_path))
+        results = transcriber.transcribe_and_embed(str(audio_path))
+        transcript = results["transcript"]
+        st.session_state.chunks_and_embeddings = results["chunks_and_embeddings"]
         st.session_state.mcp.add("transcriber", transcript)
 
     # Segment
@@ -64,26 +66,41 @@ def display_results(transcript: str, segments: List[str], analyses: List[str], s
                 with st.expander(f"Segment {i+1}"):
                     st.markdown(analysis)
 
-def handle_chat(transcript: str, analyses: List[str]) -> None:
+def handle_chat(transcript: str) -> None:
     """Handle chat interface and interactions"""
     st.subheader("Ask the Podcast")
     
-    # Initialize chatbot
+    # Initialize chatbot once
     if "chatbot" not in st.session_state:
         st.session_state.chatbot = ChatBot()
-        st.session_state.chatbot.add_context(transcript, analyses)
+        chunks_and_embeddings = st.session_state.get("chunks_and_embeddings")
+        st.session_state.chatbot.add_context(
+            transcript, 
+            chunks_and_embeddings=chunks_and_embeddings
+        )
+    
+    # Initialize question state if not exists
+    if "question" not in st.session_state:
+        st.session_state.question = ""
 
-    # Handle user input
-    user_question = st.text_input("Ask a question based on this episode:")
-    if user_question:
-        try:
-            answer = st.session_state.chatbot.ask(user_question)
-            st.session_state.mcp.add("chatbot", f"Q: {user_question}\nA: {answer}")
-            st.markdown(f"**Answer:** {answer}")
-        except Exception as e:
-            st.error(f"Error getting response: {str(e)}")
+    # Create chat form
+    with st.form(key="chat_form", clear_on_submit=True):
+        user_question = st.text_input(
+            "Ask a question based on this episode:",
+            key="question_input",
+            value=st.session_state.question
+        )
+        submit = st.form_submit_button("Ask")
+        
+        if submit and user_question:
+            try:
+                answer = st.session_state.chatbot.ask(user_question)
+                st.session_state.mcp.add("chatbot", f"Q: {user_question}\nA: {answer}")
+                st.markdown(f"**Answer:** {answer}")
+            except Exception as e:
+                st.error(f"Error getting response: {str(e)}")
 
-    # Show chat history
+    # Show chat history after form
     display_chat_history()
 
 def display_chat_history() -> None:
@@ -136,7 +153,7 @@ def main() -> None:
 
     # Display results
     display_results(transcript, segments, analyses, skip_analysis)
-    handle_chat(transcript, analyses)
+    handle_chat(transcript)
     display_context_log()
 
 if __name__ == "__main__":

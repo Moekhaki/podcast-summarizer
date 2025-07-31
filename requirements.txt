@@ -8,4 +8,6 @@ python-dotenv
 streamlit
 huggingface_hub
 google-generativeai
-pydub==0.25.1
+pydub
+numpy
+sentence-transformers
