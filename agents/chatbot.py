@@ -21,6 +21,7 @@ class ChatBot:
         self.embedding_store = EmbeddingStore()
         self.context = {}
         self.history = []
+        self.chat = None
         
     def add_context(self, transcript: str, chunks_and_embeddings: List[Tuple[str, np.ndarray]] = None):
         """Initialize chat with context and history"""
@@ -36,7 +37,7 @@ class ChatBot:
         
         # Initialize chat with system prompt and history
         system_prompt = """You are a helpful AI assistant that answers questions about a podcast.
-        You will answer questions based on the provided context.
+        You will answer questions only based on the provided context and previous exchanges.
         Maintain conversation continuity by referencing previous exchanges when relevant.
         If the answer cannot be found in the context, say "I cannot answer that based on the podcast content."
         """
@@ -65,7 +66,7 @@ class ChatBot:
 
 Please answer this question: {question}
 
-Remember to only use information from the provided context sections."""
+Remember to only use information from the provided context sections and previous exchanges."""
 
             response = self.chat.send_message(prompt)
             answer = response.text.strip()
@@ -81,7 +82,3 @@ Remember to only use information from the provided context sections."""
             
         except Exception as e:
             return f"[Error] Failed to get response: {e}"
-            
-    def get_history(self) -> List[Dict[str, str]]:
-        """Return chat history with context"""
-        return self.history
