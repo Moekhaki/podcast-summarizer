@@ -1,106 +1,103 @@
 # 🎧 Podcast Summarizer with Chatbot
 
-This project is a podcast analysis tool built using the Model Context Protocol (MCP). It transcribes audio, segments it, summarizes each part, extracts insights, and allows you to ask questions via an interactive chatbot.
+A powerful podcast analysis tool that transcribes audio, segments it, summarizes each part, extracts insights, and enables interactive Q&A through a chatbot interface. Built with Streamlit and powered by advanced AI models.
 
----
+## 🌟 Features
 
-## Features
+- **Audio Transcription**: Converts MP3/WAV files to text using Whisper
+- **Smart Segmentation**: Breaks down long transcripts into digestible chunks
+- **Content Analysis**: Extracts key insights and summaries using Gemini
+- **Interactive Chat**: Ask questions about the podcast content
+- **MCP Integration**: Tracks all model interactions for transparency
+- **Caching System**: Optimizes performance with cached results
 
--  Transcribe MP3/WAV podcast episodes using Whisper
--  Segment the transcript into manageable chunks
--  Summarize each segment using a Hugging Face summarization model
--  Extract key insights
--  Ask questions via a chatbot (powered by Mistral 7B Instruct)
--  All interactions tracked using MCP
+## 🚀 Getting Started
 
----
+### Prerequisites
 
-## Run with Docker
+- Python 3.10+
+- Google API Key (for Gemini)
 
-### 1. Clone the repo
+### Environment Setup
 
+1. Clone the repository:
 ```bash
-git clone https://github.com/YOUR_USERNAME/podcast-summarizer-mcp.git
-cd podcast-summarizer-mcp
+git clone <repository-url>
+cd podcast-summarizer
 ```
 
-### 2. Set your Hugging Face API Token
-
-Create a `.env` file or set an environment variable:
-
+2. Create a `.env` file with your API keys:
 ```bash
-export HUGGINGFACE_API_TOKEN=your_token_here
+GOOGLE_API_KEY=your_google_api_key_here
+GEMINI_MODEL_NAME=gemini-2.5-flash  # Optional, this is the default
 ```
 
-> You can get a token from: https://huggingface.co/settings/tokens
-
-### 3. Build the Docker image
-
+3. Install dependencies:
 ```bash
-docker build -t podcast-summarizer .
+pip install -r requirements.txt
 ```
 
-### 4. Run the container
+### Running the App
 
 ```bash
-docker run -it --rm -p 8501:8501 \
-  -v $(pwd)/sample_inputs:/app/sample_inputs \
-  -e HUGGINGFACE_API_TOKEN=$HUGGINGFACE_API_TOKEN \
-  podcast-summarizer
+streamlit run app.py
 ```
 
----
+## 📖 Usage
 
-## Usage Instructions
+1. Open the app in your browser (typically http://localhost:8501)
+2. Upload an MP3 or WAV file
+3. Choose whether you want detailed content analysis
+4. Click "Process Podcast" to start the analysis
+5. View the results:
+   - Full transcript
+   - Segmented analysis with key insights
+   - Ask questions through the chatbot interface
+   - Review the MCP context log
 
-1. Start the Docker container (as above)
-2. Open your browser and go to: `http://localhost:8501`
-3. Upload an `.mp3` or `.wav` file (under `sample_inputs`)
-4. The app will:
-   - Transcribe it
-   - Segment and summarize it
-   - Extract insights
-   - Allow you to ask follow-up questions
-
----
-
-## 📁 File Structure
+## 🏗️ Project Structure
 
 ```
 .
-├── app.py                     # Streamlit UI
 ├── agents/
-│   ├── transcriber.py
-│   ├── segmenter.py
-│   ├── summarizer.py
-│   ├── explainer.py
-│   └── chatbot.py
-├── mcp_schema.py              # Model Context Protocol (MCP)
-├── sample_inputs/             # Drop audio files here
-├── requirements.txt
-└── Dockerfile
+│   ├── chatbot.py           # Q&A functionality
+│   ├── content_analyzer.py   # Content analysis using Gemini
+│   ├── segmenter.py         # Text segmentation
+│   └── transcriber.py       # Audio transcription
+├── utils/
+│   └── caching.py           # Caching utilities
+├── app.py                   # Main Streamlit application
+├── mcp_schema.py           # Model Context Protocol implementation
+└── requirements.txt        # Project dependencies
 ```
 
----
+## 💾 Caching
 
-## MCP
+The application implements caching for:
+- Transcriptions
+- Content analysis
+- Embeddings
 
-The Model Context Protocol tracks all interactions:
-- Who did what (`transcriber`, `summarizer`, `chatbot`, etc.)
-- What content was processed
-- Everything is stored in a single context list for reproducibility
+This helps improve performance and reduce API costs for repeated operations.
 
----
+## 📋 Model Context Protocol (MCP)
 
-## TODO
+The MCP system tracks all AI model interactions, including:
+- Transcription results
+- Segmentation operations
+- Content analysis
+- Chat interactions
 
-- Add downloadable report
-- Support multi-turn chatbot sessions
-- Save MCP context to disk
+This provides transparency and reproducibility of results.
 
----
+## 🔨 Development
 
-## License
+To contribute:
+1. Fork the repository
+2. Create a feature branch
+3. Submit a pull request
+
+## 📄 License
 
 MIT License
 
