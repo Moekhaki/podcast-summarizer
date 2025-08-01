@@ -30,10 +30,8 @@ def save_uploaded_file(uploaded_file) -> Path:
 
 def process_audio(audio_path: Path, skip_analysis: bool) -> Tuple[str, List[str], List[str], str]:
     """Process audio file and return results"""
-    # Ensure MCP exists
-    if "mcp" not in st.session_state:
-        st.session_state.mcp = MCPContext()
-        
+    # Remove the MCP initialization here since it's already done in init_session_state()
+    
     with st.spinner("Transcribing and generating embeddings..."):
         transcriber = Transcriber()
         results = transcriber.transcribe_and_embed(str(audio_path))
@@ -101,10 +99,12 @@ def display_chat_history():
                 st.markdown(f"**Answer:** {qa['answer']}")
 
 def display_context_log():
-    st.subheader("MCP Context Log")
-    if "mcp" in st.session_state:
-        for msg in st.session_state.mcp.context:
-            st.markdown(f"**{msg.role.upper()}**: {msg.content}")
+    with st.expander("MCP Context Log", expanded=False):
+        if "mcp" in st.session_state:
+            for msg in st.session_state.mcp.context:
+                st.markdown(f"**{msg.role.upper()}**: {msg.content}")
+        else:
+            st.info("No MCP context available yet.")
 
 def main():
     init_ui()
@@ -153,7 +153,6 @@ def main():
                 st.session_state.segments = segments
                 st.session_state.analyses = analyses
                 st.session_state.file_id = file_id
-                st.session_state.mcp = MCPContext(context=[])
                 st.session_state.audio_processed = True
                 # Optionally, also log to MCPContext (not shown here, add if needed)
 
