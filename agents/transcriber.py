@@ -17,7 +17,7 @@ class Transcriber:
         self.chunk_size = chunk_size
         self.temp_dir = Path(tempfile.mkdtemp(prefix="podcast_chunks_"))
         self.embedding_store = EmbeddingStore()
-        
+
     def _split_audio(self, audio_path: str) -> List[Tuple[int, AudioSegment]]:
         """Split audio file into chunks and return with indices"""
         audio = AudioSegment.from_file(audio_path)
@@ -57,6 +57,11 @@ class Transcriber:
                 file.unlink(missing_ok=True)
             self.temp_dir.rmdir()
 
+    def _get_file_id(self, audio_path: str) -> str:
+        """Generate unique ID for the audio file"""
+        with open(audio_path, 'rb') as f:
+            return hashlib.md5(f.read()).hexdigest()
+
     @with_cache("transcription_cache")
     def transcribe(self, audio_path: str) -> str:
         """Transcribe audio file to text with chunking and caching"""
@@ -78,36 +83,23 @@ class Transcriber:
         finally:
             self._cleanup()
 
-    def _get_file_id(self, audio_path: str) -> str:
-        """Generate unique ID for the audio file"""
-        with open(audio_path, 'rb') as f:
-            return hashlib.md5(f.read()).hexdigest()
-            
-    def transcribe_and_embed(self, audio_path: str) -> Dict:
-        """Transcribe audio and generate embeddings with caching"""
+    def transcribe_and_embed(self, audio_path: str) -> Dict[str, str]:
+        """Transcribe audio and create embeddings"""
+        # Generate file ID first
         file_id = self._get_file_id(audio_path)
         
-        # Try to load existing embeddings
-        existing_embeddings = self.embedding_store.load_embeddings(file_id)
-        if existing_embeddings:
-            print("[Transcriber] Loading cached embeddings")
-            full_text = " ".join(chunk for chunk, _ in existing_embeddings)
-            return {
-                "transcript": full_text,
-                "chunks_and_embeddings": existing_embeddings
-            }
-            
-        # Transcribe if no cache exists
+        # Get transcript (this call is cached)
         transcript = self.transcribe(audio_path)
         
-        # Generate embeddings with overlap
+        # Create embeddings
         print("[Transcriber] Generating embeddings...")
-        chunks_and_embeddings = self.embedding_store.create_embeddings(transcript)
+        self.embedding_store.create_embeddings(
+            text=transcript,
+            file_id=file_id
+        )
         
-        # Cache the results
-        self.embedding_store.save_embeddings(file_id, chunks_and_embeddings)
-        
+        # Return dictionary with both results
         return {
             "transcript": transcript,
-            "chunks_and_embeddings": chunks_and_embeddings
+            "file_id": file_id
         }
