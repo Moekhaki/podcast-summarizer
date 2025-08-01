@@ -9,9 +9,17 @@ from agents.chatbot import ChatBot
 from mcp_schema import MCPContext
 
 def init_ui():
+def init_ui():
     st.set_page_config(page_title="🎧 Podcast Summarizer", layout="wide")
     st.title("Podcast Summarizer")
     st.write("Upload an audio file to transcribe, summarize, and extract key insights.")
+
+def init_session_state():
+    """Initialize session state variables"""
+    if "mcp" not in st.session_state:
+        st.session_state.mcp = MCPContext()
+    if "audio_processed" not in st.session_state:
+        st.session_state.audio_processed = False
 
 def save_uploaded_file(uploaded_file) -> Path:
     audio_path = Path("sample_inputs") / uploaded_file.name
@@ -21,24 +29,32 @@ def save_uploaded_file(uploaded_file) -> Path:
     st.success(f"File uploaded: {uploaded_file.name}")
     return audio_path
 
-def process_audio(audio_path: Path, skip_analysis: bool) -> Tuple[str, List[str], List[str]]:
+def process_audio(audio_path: Path, skip_analysis: bool) -> Tuple[str, List[str], List[str], str]:
+    """Process audio file and return results"""
+    # Ensure MCP exists
+    if "mcp" not in st.session_state:
+        st.session_state.mcp = MCPContext()
+        
     with st.spinner("Transcribing and generating embeddings..."):
         transcriber = Transcriber()
         results = transcriber.transcribe_and_embed(str(audio_path))
         transcript = results["transcript"]
-        chunks_and_embeddings = results["chunks_and_embeddings"]
+        file_id = results["file_id"]
+        st.session_state.mcp.add("transcriber", transcript)
 
     with st.spinner("Segmenting..."):
         segmenter = Segmenter(max_words=150)
         segments = segmenter.segment(transcript)
+        st.session_state.mcp.add("segmenter", "\n\n".join(segments))
 
     analyses = []
     if not skip_analysis:
         with st.spinner("Analyzing content..."):
             analyzer = ContentAnalyzer()
             analyses = analyzer.analyze_all(segments)
+            st.session_state.mcp.add("analyzer", "\n\n".join(analyses))
 
-    return transcript, segments, analyses, chunks_and_embeddings
+    return transcript, segments, analyses, file_id
 
 def display_results(transcript: str, segments: List[str], analyses: List[str], skip_analysis: bool):
     st.subheader("Full Transcript")
@@ -51,13 +67,13 @@ def display_results(transcript: str, segments: List[str], analyses: List[str], s
                 with st.expander(f"Segment {i+1}"):
                     st.markdown(analysis)
 
-def handle_chat(transcript: str, chunks_and_embeddings):
+def handle_chat(transcript: str, file_id: str):
     st.subheader("Ask the Podcast")
 
     # Initialize chatbot on first use after processing
     if "chatbot" not in st.session_state:
         chatbot = ChatBot()
-        chatbot.add_context(transcript, chunks_and_embeddings=chunks_and_embeddings)
+        chatbot.add_context(transcript, file_id=file_id)
         st.session_state.chatbot = chatbot
 
     # Display chat form
@@ -94,6 +110,9 @@ def display_context_log():
 def main():
     init_ui()
 
+    # Initialize session state
+    init_session_state()
+    
     # File uploader
     uploaded_file = st.file_uploader("Upload MP3 or WAV file", type=["mp3", "wav"])
     if uploaded_file:
@@ -107,11 +126,14 @@ def main():
             # Reset session state for new file
             for key in [
                 "transcript", "segments", "analyses",
-                "chunks_and_embeddings", "chatbot", "chat_history", "mcp", "audio_processed"
+                "chatbot", "chat_history", "mcp", 
+                "audio_processed", "file_id"
             ]:
                 if key in st.session_state:
                     del st.session_state[key]
             st.session_state.last_uploaded_file = uploaded_file.name
+            # Reinitialize session state
+            init_session_state()
 
         # Analysis preference
         analysis_preference = st.radio(
@@ -126,12 +148,12 @@ def main():
         if st.button("Process Podcast") or st.session_state.get("audio_processed"):
             if not st.session_state.get("audio_processed"):
                 audio_path = save_uploaded_file(uploaded_file)
-                transcript, segments, analyses, chunks_and_embeddings = process_audio(audio_path, skip_analysis)
+                transcript, segments, analyses, file_id = process_audio(audio_path, skip_analysis)
                 # Save all results to session state
                 st.session_state.transcript = transcript
                 st.session_state.segments = segments
                 st.session_state.analyses = analyses
-                st.session_state.chunks_and_embeddings = chunks_and_embeddings
+                st.session_state.file_id = file_id
                 st.session_state.mcp = MCPContext(context=[])
                 st.session_state.audio_processed = True
                 # Optionally, also log to MCPContext (not shown here, add if needed)
@@ -145,7 +167,7 @@ def main():
             )
             handle_chat(
                 st.session_state.transcript,
-                st.session_state.chunks_and_embeddings
+                st.session_state.file_id
             )
             display_context_log()
 
