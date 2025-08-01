@@ -9,7 +9,6 @@ from agents.chatbot import ChatBot
 from mcp_schema import MCPContext
 
 def init_ui():
-def init_ui():
     st.set_page_config(page_title="🎧 Podcast Summarizer", layout="wide")
     st.title("Podcast Summarizer")
     st.write("Upload an audio file to transcribe, summarize, and extract key insights.")

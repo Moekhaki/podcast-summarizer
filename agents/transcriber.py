@@ -17,6 +17,7 @@ class Transcriber:
         self.chunk_size = chunk_size
         self.temp_dir = Path(tempfile.mkdtemp(prefix="podcast_chunks_"))
         self.embedding_store = EmbeddingStore()
+
     def _split_audio(self, audio_path: str) -> List[Tuple[int, AudioSegment]]:
         """Split audio file into chunks and return with indices"""
         audio = AudioSegment.from_file(audio_path)

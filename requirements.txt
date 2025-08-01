@@ -12,5 +12,3 @@ pydub
 numpy
 sentence-transformers
 chromadb
-pydub
-numpy
