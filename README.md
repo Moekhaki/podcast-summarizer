@@ -5,8 +5,8 @@ A powerful podcast analysis tool that transcribes audio, segments it, summarizes
 ## 🌟 Features
 
 - **Audio Transcription**: Converts MP3/WAV files to text using Whisper
-- **Smart Segmentation**: Breaks down long transcripts into digestible chunks
-- **Content Analysis**: Extracts key insights and summaries using Gemini
+- **Segmentation**: Breaks down long transcripts into digestible chunks
+- **Content Analysis**: Extracts key insights and summaries
 - **Interactive Chat**: Ask questions about the podcast content
 - **MCP Integration**: Tracks all model interactions for transparency
 - **Caching System**: Optimizes performance with cached results
@@ -18,7 +18,7 @@ A powerful podcast analysis tool that transcribes audio, segments it, summarizes
 - Python 3.10+
 - Google API Key (for Gemini)
 
-### Environment Setup
+### Option 1: To run the app locally
 
 1. Clone the repository:
 ```bash
@@ -37,11 +37,35 @@ GEMINI_MODEL_NAME=gemini-2.5-flash  # Optional, this is the default
 pip install -r requirements.txt
 ```
 
-### Running the App
+4. Running the App
 
 ```bash
 streamlit run app.py
 ```
+
+### Option 2: To run the app in a Docker container 🐳
+
+1. Build the Docker image:
+```bash
+docker build -t podcast-summarizer .
+```
+
+2. Run the container:
+```bash
+docker run -p 8501:8501 \
+  --env-file .env \
+  podcast-summarizer
+```
+
+3. Access the application at `http://localhost:8501`
+
+The Docker container includes:
+- Python 3.10 slim base image
+- FFmpeg for audio processing
+- All required Python dependencies
+- Exposed port 8501 for Streamlit
+
+Note: Make sure to create the `.env` file with your API keys before building the container.
 
 ## 📖 Usage
 
@@ -100,4 +124,3 @@ To contribute:
 ## 📄 License
 
 MIT License
-

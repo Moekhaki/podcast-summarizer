@@ -2,12 +2,21 @@ FROM python:3.10-slim
 
 WORKDIR /app
 
+# Install system dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    ffmpeg \
+    git \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+# Copy only requirements first to leverage Docker cache
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy application code
 COPY . .
 
-RUN apt-get update && \
-    apt-get install -y ffmpeg git && \
-    pip install --upgrade pip && \
-    pip install -r requirements.txt
 
 EXPOSE 8501
 
