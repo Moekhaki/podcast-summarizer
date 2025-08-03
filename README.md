@@ -2,7 +2,7 @@
 
 A powerful podcast analysis tool that transcribes audio, segments it, summarizes each part, extracts insights, and enables interactive Q&A through a chatbot interface. Built with Streamlit and powered by advanced AI models.
 
-## 🌟 Features
+## Features
 
 - **Audio Transcription**: Converts MP3/WAV files to text using Whisper
 - **Segmentation**: Breaks down long transcripts into digestible chunks
@@ -11,7 +11,7 @@ A powerful podcast analysis tool that transcribes audio, segments it, summarizes
 - **MCP Integration**: Tracks all model interactions for transparency
 - **Caching System**: Optimizes performance with cached results
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -67,7 +67,7 @@ The Docker container includes:
 
 Note: Make sure to create the `.env` file with your API keys before building the container.
 
-## 📖 Usage
+## Usage
 
 1. Open the app in your browser (typically http://localhost:8501)
 2. Upload an MP3 or WAV file
@@ -79,7 +79,7 @@ Note: Make sure to create the `.env` file with your API keys before building the
    - Ask questions through the chatbot interface
    - Review the MCP context log
 
-## 🏗️ Project Structure
+## Project Structure
 
 ```
 .
@@ -95,7 +95,7 @@ Note: Make sure to create the `.env` file with your API keys before building the
 └── requirements.txt        # Project dependencies
 ```
 
-## 💾 Caching
+## Caching
 
 The application implements caching for:
 - Transcriptions
@@ -104,7 +104,7 @@ The application implements caching for:
 
 This helps improve performance and reduce API costs for repeated operations.
 
-## 📋 Model Context Protocol (MCP)
+## Model Context Protocol (MCP)
 
 The MCP system tracks all AI model interactions, including:
 - Transcription results
@@ -114,13 +114,13 @@ The MCP system tracks all AI model interactions, including:
 
 This provides transparency and reproducibility of results.
 
-## 🔨 Development
+## Development
 
 To contribute:
 1. Fork the repository
 2. Create a feature branch
 3. Submit a pull request
 
-## 📄 License
+## License
 
 MIT License
