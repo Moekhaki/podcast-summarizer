@@ -1,8 +1,8 @@
 import os
-from typing import List, Dict, Tuple
+
 from dotenv import load_dotenv
 import google.generativeai as genai
-import numpy as np
+
 from utils.embedding import EmbeddingStore
 
 

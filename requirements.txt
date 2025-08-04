@@ -1,14 +1,11 @@
-openai
 faster-whisper
 pydantic
 streamlit
 torch
 tqdm
 python-dotenv
-streamlit
 huggingface_hub
 google-generativeai
 pydub
-numpy
-sentence-transformers
 chromadb
+sentence-transformers

@@ -30,8 +30,6 @@ def save_uploaded_file(uploaded_file) -> Path:
 
 def process_audio(audio_path: Path, skip_analysis: bool) -> Tuple[str, List[str], List[str], str]:
     """Process audio file and return results"""
-    # Remove the MCP initialization here since it's already done in init_session_state()
-    
     with st.spinner("Transcribing and generating embeddings..."):
         transcriber = Transcriber()
         results = transcriber.transcribe_and_embed(str(audio_path))

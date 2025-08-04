@@ -1,9 +1,6 @@
 import os
 import hashlib
-from typing import TypeVar, Callable, Any
 from functools import wraps
-
-T = TypeVar('T')
 
 class CacheManager:
     def __init__(self, cache_dir: str):
@@ -32,9 +29,9 @@ class CacheManager:
         with open(cache_path, 'w') as f:
             f.write(result)
 
-def with_cache(cache_dir: str) -> Callable:
+def with_cache(cache_dir: str):
     """Decorator to add caching to any function"""
-    def decorator(func: Callable[..., str]) -> Callable[..., str]:
+    def decorator(func):
         cache_manager = CacheManager(cache_dir)
         
         @wraps(func)
